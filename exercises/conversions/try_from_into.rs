@@ -38,27 +38,21 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
-        let red = match tuple.0 {
-            0..=255 => tuple.0,
-            _ => return  Err(IntoColorError::IntConversion),
+        let red = match tuple.0 >= 0 && tuple.0 < 256 {
+            true => tuple.0,
+            false => return Err(IntoColorError::IntConversion)
         };
-        
-        let green = match tuple.1 {
-            0..=255 => tuple.1,
-            _ => return  Err(IntoColorError::IntConversion),
-        };
-        
-        let blue = match tuple.2 {
-            0..=255 => tuple.2,
-            _ => return  Err(IntoColorError::IntConversion),
+        let green = match tuple.1 >= 0 && tuple.1 < 256 {
+            true => tuple.1,
+            false => return Err(IntoColorError::IntConversion)
         };
 
-        return Ok(Color {
-            red: red as u8,
-            green: green as u8,
-            blue: blue as u8,
-        });
-    
+        let blue = match tuple.2 >= 0 && tuple.2 < 256 {
+            true => tuple.2,
+            false => return Err(IntoColorError::IntConversion)
+        };
+        
+        Ok( Color { red: red as u8, green: green as u8, blue: blue as u8 })
     }
 }
 
@@ -66,40 +60,21 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
-        if arr.len() != 3 {
-            return Err(IntoColorError::BadLen);
-        }
-        let mut input = arr.into_iter();
+        let red = match arr[0] >= 0 && arr[0] < 256 {
+            true => arr[0],
+            false => return Err(IntoColorError::IntConversion)
+        };
+        let green = match arr[1] >= 0 && arr[1] < 256 {
+            true => arr[1],
+            false => return Err(IntoColorError::IntConversion)
+        };
 
-        let red = match input.next() {
-            Some(i) => match i {
-                0..=255 => i as u8,
-                _ => return  Err(IntoColorError::IntConversion),
-            },
-            _ =>  return  Err(IntoColorError::IntConversion),
+        let blue = match arr[2] >= 0 && arr[2] < 256 {
+            true => arr[2],
+            false => return Err(IntoColorError::IntConversion)
         };
         
-        let green = match input.next() {
-            Some(i) => match i {
-                0..=255 => i as u8,
-                _ => return  Err(IntoColorError::IntConversion),
-            },
-            _ =>  return  Err(IntoColorError::IntConversion),
-        };
-        
-        let blue = match input.next() {
-            Some(i) => match i {
-                0..=255 => i as u8,
-                _ => return  Err(IntoColorError::IntConversion),
-            },
-            _ =>  return  Err(IntoColorError::IntConversion),
-        };        
-
-        return Ok(Color {
-            red: red,
-            green: green,
-            blue: blue,
-        });
+        Ok( Color { red: red as u8, green: green as u8, blue: blue as u8 })
     }
 }
 
@@ -107,43 +82,24 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
-        let mut input = slice.to_owned();
-
-        if input.len() != 3 {
-            return Err(IntoColorError::BadLen);
+        if slice.len() != 3 {
+            return  Err(IntoColorError::BadLen);
         }
 
-        let mut input = input.iter_mut();
+        let mut temp_v: Vec<u8> = Vec::new();
+        for i in slice {
+            if *i >= 0 && *i < 256 {
+                temp_v.push(*i as u8);
+            } else {
+                return Err(IntoColorError::IntConversion);
+            }
+        }
 
-        let red = match input.next() {
-            Some(i) => match i {
-                0..=255 => *i as u8,
-                _ => return  Err(IntoColorError::IntConversion),
-            },
-            _ =>  return  Err(IntoColorError::IntConversion),
-        };
-        
-        let green = match input.next() {
-            Some(i) => match i {
-                0..=255 => *i as u8,
-                _ => return  Err(IntoColorError::IntConversion),
-            },
-            _ =>  return  Err(IntoColorError::IntConversion),
-        };
-        
-        let blue = match input.next() {
-            Some(i) => match i {
-                0..=255 => *i as u8,
-                _ => return  Err(IntoColorError::IntConversion),
-            },
-            _ =>  return  Err(IntoColorError::IntConversion),
-        };
+        let red = temp_v[0];
+        let green = temp_v[1];
+        let blue = temp_v[2];
 
-        return Ok(Color {
-            red: red,
-            green: green,
-            blue: blue,
-        });
+        Ok(Color { red: red, green: green, blue: blue })
     }
 }
 
